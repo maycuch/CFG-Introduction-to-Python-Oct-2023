@@ -1,0 +1,281 @@
+import csv
+def read_data():
+    data = []
+
+    with open('sales.csv', 'r') as sales_csv:
+        spreadsheet = csv.DictReader(sales_csv)
+        for row in spreadsheet:
+            data.append(row)
+    return data
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
+def run():
+    data = read_data()
+
+    sales = []
+    for row in data:
+        sale = int(row['sales'])
+        sales.append(sale)
+    total = sum(sales)
+    print('\nTotal sales: £{:0,.2f}\n'.format(total))
+run()
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# TOTAL % MARGIN AND NET PROFIT
+print('ANNUAL % MARGIN AND NET PROFIT')
+def total_margin():
+    data=read_data()
+    total_sales = 0
+    costs = 0
+
+    for row in data:
+        sale = int(row['sales'])
+        cost = int(row['expenditure'])
+        total_sales +=sale
+        costs +=cost
+
+    overall_margin = round((((total_sales / 1.2) - costs) / (total_sales / 1.2)) * 100,ndigits=2) #(sales_ex_vat - cost)/sales_ex_VAT * 100
+    overall_profit = round(((total_sales / 1.2) - costs),ndigits=0) # profit calculation (sales_ex_vat - costs)
+    print('Overall %margin in 2018 was {}% and net profit of £{:0,.0f}.\n'.format(overall_margin,overall_profit))
+total_margin()
+#---------------------------------------------------------------------------------------------------------------------------------------
+# RAW PYTHON CODE AVERAGE SALES
+print('AVERAGE SALES')
+def average():
+    data = read_data()
+    total_sales = 0
+    count = 0
+
+    for row in data:
+        total_sales += int(row['sales'])
+        count += 1
+
+    average = round(total_sales / count,ndigits=2)
+    print('Raw Python code: Monthly average sales : £{:0,.0f}'.format(average).replace('£-','-£'))
+average()
+
+#--------------------------------------------------------------------------------------------------------------------------------
+# PANDA's CODE TO CALCULATE AVERAGE SALES
+
+import pandas as pd
+
+pd_sales = pd.read_csv('sales.csv') #converts csv file to pandas data frame (table)
+print('Pandas code: Monthly average sales : {:0,.2f}\n'.format(round(pd_sales['sales'].mean()),ndigits=0)) #using pandas to get an average sales using pandas
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# RAW PYTHON CODE MONTH WITH MAX SALES
+print('MONTH WITH MAXIMUM SALES')
+def highest():
+    data = read_data()
+    monthes = []
+    sales = []
+    for row in data:
+        sale = int(row['sales'])
+        month = row['month']
+        sales.append(sale)
+        monthes.append(month)
+
+    maximum = max(sales)
+    pos = sales.index(max(sales)) #getting an index/postion of the max sales within a list
+
+# Converting abbreviated month to full month name:
+    month_dict = {"jan": "January",
+                  "feb": "February",
+                  "mar": "March",
+                  "apr": "April",
+                  "may": "May",
+                  "jun": "June",
+                  "jul": "July",
+                  "aug": "August",
+                  "sep": "September",
+                  "oct": "October",
+                  "nov": "November",
+                  "dec": "December"}
+    abrev_month = monthes[pos]
+    if abrev_month in month_dict:
+        converted_month = month_dict[abrev_month]
+
+    print('Raw Python code: {} was a month with the highest sales of : £{:0,.2f}'.format(converted_month,maximum).replace('£-','-£'))
+highest()
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# PANDAS CODE TO CALCULATE MAX SALES
+import pandas as pd
+
+pd_sales = pd.read_csv('sales.csv') #converts csv file to pandas data frame (table)
+max_month = pd_sales.loc[pd_sales['sales'] == pd_sales['sales'].max(),'month'].iloc[0] #identify a month related to maximum sales
+print('Pandas code: {} was a month with the highest sales of: {:0,.2f}\n'.format(max_month,pd_sales['sales'].max()))
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# RAW PYTHON CODE MONTH WITH MIN SALES
+print('MONTH WITH MIN SALES')
+def lowest():
+    data = read_data()
+    monthes = []
+    sales = []
+    for row in data:
+        sale = int(row['sales'])
+        month = row['month']
+        sales.append(sale) # compile a list of all sales in the same order as per the original file
+        monthes.append(month) #compile a list of abbreviated month's names
+    maximum = min(sales)
+    pos = sales.index(min(sales))  # getting an index/position of the max sales within a list
+
+    # Converting abbreviated month to full month name:
+    month_dict = {"jan": "January",
+                  "feb": "February",
+                  "mar": "March",
+                  "apr": "April",
+                  "may": "May",
+                  "jun": "June",
+                  "jul": "July",
+                  "aug": "August",
+                  "sep": "September",
+                  "oct": "October",
+                  "nov": "November",
+                  "dec": "December"}
+    abrev_month = monthes[pos]
+    if abrev_month in month_dict:
+        converted_month = month_dict[abrev_month]
+
+    print('{} was a month with the lowest sales of : £{:0,.2f}\n'.format(converted_month, maximum).replace('£-', '-£')) #formula to convert int value into £amount with comma separated thousands
+
+lowest()
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# GRAPH TO SHOW SALES AND COSTS BY MONTH
+
+import matplotlib.pyplot as plt # importing the required module
+
+data = read_data()
+sales = []
+monthes = []
+costs = []
+for row in data:
+    sale = int(row['sales'])
+    month = row['month']
+    cost = int(row['expenditure'])
+    sales.append(sale)
+    monthes.append(month)
+    costs.append(cost)
+
+x = monthes # x axis values
+y = sales # corresponding y axis values
+x2 = monthes
+y2 = costs
+# plotting the points
+plt.plot(x, y, label='Sales')
+plt.plot(x2, y2, label='Costs')
+
+# naming the x axis
+plt.xlabel('Month')
+# naming the y axis
+plt.ylabel('Sales')
+
+# giving a title to my graph
+plt.title('Monthly sales in 2018')
+
+# show a legend on the plot
+plt.legend()
+
+# function to show the plot
+plt.show()
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# PYTHON RAW CODE MONTHLY SALES CHANGES %
+print('MONTHLY SALES CHANGES IN A LIST')
+def monthly_sales_difference():
+    data = read_data()
+    sales = []
+
+    for row in data:
+        sale = int(row['sales'])
+        sales.append(sale) # Creating a list of original sales with index 0 to 11 (12 items)
+
+    sales_plus_one = sales[1:len(sales)] #List of sales from index 1 to 11 (11 items as we are excluding January as no previous month)
+
+    import operator
+    monthly_difference = (list(map(operator.sub, sales_plus_one, sales))) # Calculating differences in monthly sales as int (month - previous month)
+
+    res = [] # list of monthly differences in %
+    for i in range(len(monthly_difference)):
+        res.append((monthly_difference[i] / sales_plus_one[i]) * 100)
+
+    formated_res = [round(elem,1) for elem in res] # list of monthly differences in % rounded to 1 decimal space
+
+    print(f'Monthly sales difference in £: {monthly_difference}')
+    print(f'Monthly sales difference in %: {formated_res}')
+
+monthly_sales_difference()
+
+#-----------------------------------------------------------------------------------------------------------------
+#MONTHLY % SALES CHANGE USING PANDAS
+
+import pandas as pd
+
+df = pd.read_csv('sales.csv')
+df['Monthly_sales_difference'] = df['sales'].diff()                 #pandas diff() function calculates difference
+df['Monthly_%_sales_diff'] = df['sales'].pct_change()*100           #pandas pct_change() function calculates difference in %
+df['Monthly_%_sales_diff'] = df['Monthly_%_sales_diff'].round(0)    #pandas round(n) rounding to n decimal points
+print(f'\nPandas data frame incl. new columns: ')
+print(df.head(20))
+
+df.to_csv('new_sales.csv',index=False) #                 #write into csv file including new columns
+
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# MONTHLY % MARGIN BY MONTH ASSUMING VAT OF 20%
+
+def calculate_monthly_margin():
+    data = read_data()
+    sales_ex_vat = [] #getting a list of sales ex VAT
+    costs = [] #getting a list of costs
+
+    for row in data:
+        sale = int(row['sales']) / 1.2
+        cost = int(row['expenditure'])
+        sales_ex_vat.append(sale)
+        costs.append(cost)
+
+    import operator
+    profit = (list(map(operator.sub, sales_ex_vat,costs))) #calculating a profit
+
+    result = [round((i / j) * 100,ndigits=2) for i,j in zip(profit,sales_ex_vat)] #
+    print(f'\nMonthly margin is %: {result}')
+calculate_monthly_margin()
+
+
+# GRAPH TO SHOW SALES AND COSTS BY MONTH
+
+# Library Import(numpy and matplotlib)
+import matplotlib.pyplot as plot
+import pandas as pd
+
+# Make a data definition
+data = read_data()
+sales = []
+monthes = []
+costs = []
+for row in data:
+    sale = int(row['sales'])
+    month = row['month']
+    cost = int(row['expenditure'])
+    sales.append(sale) #list of sales
+    monthes.append(month) #list of monthes
+    costs.append(cost) #list of costs
+
+_data = {'Costs': costs,'Sales': sales} #Dictonary wit data
+_df = pd.DataFrame(_data,columns=['Costs', 'Sales'], index = monthes)
+
+_df.plot.bar(xlabel='Month', ylabel='Sales / Costs',color=['#FFA500','royalblue']) # Multiple bar chart
+plt.title("2018 Monthly Costs and Sales",size=16,fontweight="bold") # Add a title
+plot.show() # Display the plot
+
+
+
+
+
+
+
+
